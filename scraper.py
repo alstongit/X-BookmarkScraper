@@ -2,6 +2,27 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 import time
+import sqlite3
+
+def save_to_db(tweets):
+    conn = sqlite3.connect('bookmarks.db')
+    cursor = conn.cursor()
+    
+    # Create table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS tweets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            url TEXT,
+            content TEXT
+        )
+    ''')
+
+    # Insert tweets
+    for url, content in tweets:
+        cursor.execute('INSERT INTO tweets (url, content) VALUES (?, ?)', (url, content))
+    
+    conn.commit()
+    conn.close()
 
 # Optional: make Chrome headless (run in background)
 options = Options()
@@ -46,4 +67,9 @@ print(f"Found {len(tweets)} bookmarked tweets.\n")
 for url, text in tweets:
     print(f"{url}\n{text}\n{'-'*40}")
 
+print(f"Found {len(tweets)} bookmarked tweets.\n")
+
 driver.quit()
+
+save_to_db(tweets)
+print("✅ All tweets saved to bookmarks.db")
